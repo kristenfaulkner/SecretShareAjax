@@ -1,0 +1,33 @@
+
+<ul class="users-list">
+  <% User.all.each do |a_user| %>
+    <li><%= link_to a_user.username, user_url(a_user) %>
+    
+      <% if current_user.can_friend?(a_user)%>
+        <div>
+          <button class="add-friend" data-username="<%= a_user.username %>" 
+            data-id="<%= a_user.id %>">Add Friend</button>
+        </div>
+      <% elsif current_user.id != a_user.id %>
+        <div>
+          <button class="remove-friend" 
+          data-username="<%= a_user.username %>" 
+          data-id="<%= a_user.id %>" 
+          data-friendship=
+          "<%= Friendship.find_by_pair(current_user, a_user).id%>">
+            Remove Friend
+          </button>
+        </div>
+      <% end %>
+    </li>
+    <br>
+  <% end %>
+</ul>
+
+<script type="text/javascript">
+$(function() { 
+  $('.users-list').on('click', '.add-friend', Friends.addFriend.bind(this));
+  $('.users-list').on('click', '.remove-friend',
+  Friends.removeFriend.bind(this));
+}); 
+</script>

@@ -1,0 +1,116 @@
+<h1><%= @user.username %></h1>
+
+<h2><%=@user.username%>'s Secrets</h2>
+
+<!--Create a new Secret-->
+<form id="add-secret">
+  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+  <label>Title:
+    <input type="text" name="secret[title]" placeholder="Secret Title Here Plz">
+  </label>
+  <br>
+  <label>Body:
+    <textarea name="secret[body]" placeholder="Psst tell me what it is I won't tell anyone!"></textarea>
+  </label>
+  <br>
+  <button>Submit</button>
+</form>
+
+<!--Show the User's secrets-->
+<ul class="secrets">
+  <% @user.received_secrets.each do |secret| %>
+  <li><%= secret.title %>
+    <blockquote><%= secret.body %></blockquote>
+  </li>
+  <% end %>
+</ul>
+
+<hr>
+
+<!--Show the User's Friends-->
+<h2><%=@user.username%>'s Friends</h2>
+<ul class="my-friends">
+  <% current_user.owned_friends.each do |friend| %>
+  <li><%=link_to friend.username, user_url(friend) %>
+    <button class="remove-friend" 
+    data-username="<%= friend.username %>" 
+    data-id="<%= friend.id %>" 
+    data-friendship=
+    "<%= Friendship.find_by_pair(current_user, friend).id%>">
+    Remove Friend
+  </button>
+</li>
+<% end %>
+</ul>
+
+
+<!--Show the User's Followers-->
+<h2><%=@user.username%>'s  Followers</h2>
+<ul>
+<% current_user.admirers.each do |creep| %>
+<li><%=link_to creep.username, user_url(creep) %></li>
+<% end %>
+</ul>
+  
+<%= link_to "<< Back to all Users", users_url %>
+
+
+<script type="text/javascript">
+$(function() {
+  $('.my-friends').on('click', '.remove-friend',
+  Friends.removeFriendForever.bind(this));
+}); 
+</script>
+
+
+
+
+<script type="text/javascript">
+
+$(function() {
+  
+  var addSecret = function (event) {
+    event.preventDefault();
+    $target = $(event.target);
+    serialized = $target.serialize();
+    $.ajax({
+      url: '/users/'+ <%= @user.id %> +"/secrets ",
+      type: 'POST',
+      data: serialized,
+      success: function(secret, status, response) {
+        console.log("Thank you for adding a secret!");
+        
+        $('.secrets').append( "<li id=" + secret.id + ">" + 
+            secret.title + "<blockquote>" +
+            debugger
+            secret.body + "</blockquote>
+            <button class='remove-secret'>Remove Secret</button></li>");
+        );
+      },
+      error: function(response){
+        alert("Could not add secret. Try again later.");
+      }
+    })
+  };
+
+  
+  var removeSecret = function (event) {
+    $target = $(event.target);
+    $.ajax({
+      url: '/users/'+ <%= @user.id %> +"/secrets ",
+      type: 'DELETE',
+      success: function(secretid) {
+        console.log("Your secret has been deleted!");      
+        $('#' + secretid ).remove();
+      },
+      error: function(response){
+        alert("Could not add secret. Try again later.");
+      }
+    })
+  };
+  
+  $('#add-secret').on('submit', addSecret.bind(this));
+  $('#remove-secret').on('submit', removeSecret.bind(this));
+
+});
+</script>
